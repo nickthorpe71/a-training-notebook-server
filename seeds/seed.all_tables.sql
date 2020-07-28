@@ -7,7 +7,7 @@ TRUNCATE
   sets
   RESTART IDENTITY CASCADE;
 
-INSERT INTO users (user_name, email, password)
+INSERT INTO users (username, email, password)
 VALUES
   ('dunder', 'DunderMifflin@gmail.com', 'password'),
   ('b.deboop', 'BodeepDeboop@gmail.com', 'password1'),
@@ -42,7 +42,7 @@ VALUES
   ('bench', 8),('squat', 9),('curl', 10),('tri extension', 11),('cable rows', 11),
   ('deadlift', 12);
 
-INSERT INTO workouts (exercise_id, set_weight, set_reps, set_number)
+INSERT INTO sets (exercise_id, set_weight, set_reps, set_number)
 VALUES
   (1, '135', 4, 1), (1, '12', 6, 2),(1, '15', 10, 3),(1, '240', 3, 4),(1, 'Body', 8, 5),
   (2, '235', 4, 2), (2, '22', 6, 2),(2, '25', 20, 3),(2, '240', 3, 4),(2, 'Body', 8, 5),
@@ -60,7 +60,7 @@ VALUES
   (14, '1435', 4, 14), (14, '142', 6, 2),(14, '145', 140, 3),(14, '240', 3, 4),(14, 'Body', 8, 5),
   (15, '135', 4, 15), (15, '12', 6, 2),(15, '15', 10, 3),(15, '240', 3, 4),(15, 'Body', 8, 5),
   (16, '135', 4, 1), (16, '12', 6, 2),(17, '15', 10, 3),(17, '240', 3, 4),(18, 'Body', 8, 5),
-  (20, '135', 4, 1), (20, '12', 6, 2),(19 '15', 10, 3),(19, '240', 3, 4),(18, 'Body', 8, 5),
+  (20, '135', 4, 1), (20, '12', 6, 2),(19, '15', 10, 3),(19, '240', 3, 4),(18, 'Body', 8, 5),
   (21, '135', 4, 1), (22, '12', 6, 2),(22, '15', 10, 3),(23, '240', 3, 4),(24, 'Body', 8, 5),
   (25, '135', 4, 1), (25, '12', 6, 2),(26, '15', 10, 3),(26, '240', 3, 4),(27, 'Body', 8, 5),
   (27, '135', 4, 1), (28, '12', 6, 2),(28, '15', 10, 3),(29, '240', 3, 4),(30, 'Body', 8, 5),

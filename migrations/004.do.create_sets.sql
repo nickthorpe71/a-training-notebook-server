@@ -1,7 +1,7 @@
 CREATE TABLE sets (
   id SERIAL PRIMARY KEY ,
   exercise_id INTEGER
-    REFERENCES exercises(id) ON DEELTE CASCADE NOT NULL,
+    REFERENCES exercises(id) ON DELETE CASCADE NOT NULL,
   set_number INTEGER NOT NULL,
   set_weight TEXT,
   set_reps INTEGER,
