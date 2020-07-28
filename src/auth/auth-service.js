@@ -1,8 +1,8 @@
 const AuthService = {
-  getUserWithUserName(db, username) {
+  getUserWithUserName(db, email) {
     return db('users')
       .select('*')
-      .where({ username })
+      .where({ email })
       .first();
   },
 };

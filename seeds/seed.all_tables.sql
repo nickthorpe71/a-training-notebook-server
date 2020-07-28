@@ -9,12 +9,12 @@ TRUNCATE
 
 INSERT INTO users (username, email, password)
 VALUES
-  ('dunder', 'DunderMifflin@gmail.com', 'password'),
-  ('b.deboop', 'BodeepDeboop@gmail.com', 'password1'),
-  ('c.bloggs', 'CharlieBloggs@gmail.com', 'password2'),
-  ('s.smith', 'SamSmith@gmail.com', 'password3'),
-  ('lexlor', 'AlexTaylor@gmail.com', 'password4'),
-  ('wippy', 'PingWonIn@gmail.com', 'password5');
+  ('dunder', 'DunderMifflin@gmail.com', '$2a$12$z0u7H3yrQTbfxhv55C0JleoQFXK5uvZ2wqKUqqV3NsOBcfZ9B5NOW'),
+  ('b.deboop', 'BodeepDeboop@gmail.com', '$2a$12$U6TplukfN6js3rmm90DwFuKzayxbQ/wKckLCqkFZoiqloPW/1UwWa'),
+  ('c.bloggs', 'CharlieBloggs@gmail.com', '$2a$12$Aa7x/0x3XDU5XiqF7byj3eiFDD63jy5mmLWbh5tINvF/zWMktVPBW'),
+  ('s.smith', 'SamSmith@gmail.com', '$2a$12$dahEoDZZ21FV4Z3xBjw5Xeki1fVfWZIFmvdipXlS5/o5pRa2kbdtO'),
+  ('lexlor', 'AlexTaylor@gmail.com', '$2a$12$JSCRiCJexxcp/a.R9.432OBiKMSTfthP27APem/cW3iXIota0GapC'),
+  ('wippy', 'PingWonIn@gmail.com', '$2a$12$mWXM5jGoOla3qf0O/D4UL..swbYT3S/pK9hVOtJsu8e7j72rhMGuK');
 
 INSERT INTO workouts (workout_date, title, user_id, notes)
 VALUES
