@@ -8,28 +8,28 @@ function makeUsersArray() {
       username: 'test-user-1',
       email: 'test@gmail.com',
       password: 'password',
-      date_created: '2029-01-22T16:28:32.615Z',
+      created_at: '2029-01-22T16:28:32.615Z',
     },
     {
       id: 2,
-      user_name: 'test-user-2',
+      username: 'test-user-2',
       email: 'test@gmail.com',
       password: 'password',
-      date_created: '2029-01-22T16:28:32.615Z',
+      created_at: '2029-01-22T16:28:32.615Z',
     },
     {
       id: 3,
-      user_name: 'test-user-3',
+      username: 'test-user-3',
       email: 'test@gmail.com',
       password: 'password',
-      date_created: '2029-01-22T16:28:32.615Z',
+      created_at: '2029-01-22T16:28:32.615Z',
     },
     {
       id: 4,
-      user_name: 'test-user-4',
+      username: 'test-user-4',
       email: 'test@gmail.com',
       password: 'password',
-      date_created: '2029-01-22T16:28:32.615Z',
+      created_at: '2029-01-22T16:28:32.615Z',
     },
   ];
 }
@@ -72,7 +72,6 @@ function makeExercisesArray(workouts) {
       id: 1,
       title: 'Deadlift',
       workout_id: workouts[0].id,
-      date_created: '2029-01-22T16:28:32.615Z',
       created_at: '2020-07-26T16:28:32.615Z',
       updated_at: '2020-07-28T16:28:32.615Z',
     },
@@ -80,7 +79,6 @@ function makeExercisesArray(workouts) {
       id: 2,
       title: 'curls',
       workout_id: workouts[0].id,
-      date_created: '2029-01-22T16:28:32.615Z',
       created_at: '2020-07-26T16:28:32.615Z',
       updated_at: '2020-07-28T16:28:32.615Z',
     },
@@ -88,7 +86,6 @@ function makeExercisesArray(workouts) {
       id: 3,
       title: 'bench',
       workout_id: workouts[0].id,
-      date_created: '2029-01-22T16:28:32.615Z',
       created_at: '2020-07-26T16:28:32.615Z',
       updated_at: '2020-07-28T16:28:32.615Z',
     },
@@ -127,86 +124,6 @@ function makeSetsArray(exercises) {
   ];
 }
 
-function makeExpectedThing(users, thing, reviews = []) {
-  const user = users
-    .find(user => user.id === thing.user_id);
-
-  const thingReviews = reviews
-    .filter(review => review.thing_id === thing.id);
-
-  const number_of_reviews = thingReviews.length;
-  const average_review_rating = calculateAverageReviewRating(thingReviews);
-
-  return {
-    id: thing.id,
-    image: thing.image,
-    title: thing.title,
-    content: thing.content,
-    date_created: thing.date_created,
-    number_of_reviews,
-    average_review_rating,
-    user: {
-      id: user.id,
-      user_name: user.user_name,
-      full_name: user.full_name,
-      nickname: user.nickname,
-      date_created: user.date_created,
-    },
-  };
-}
-
-function calculateAverageReviewRating(reviews) {
-  if (!reviews.length) return 0;
-
-  const sum = reviews
-    .map(review => review.rating)
-    .reduce((a, b) => a + b);
-
-  return Math.round(sum / reviews.length);
-}
-
-function makeExpectedThingReviews(users, thingId, reviews) {
-  const expectedReviews = reviews
-    .filter(review => review.thing_id === thingId);
-
-  return expectedReviews.map(review => {
-    const reviewUser = users.find(user => user.id === review.user_id);
-    return {
-      id: review.id,
-      text: review.text,
-      rating: review.rating,
-      date_created: review.date_created,
-      user: {
-        id: reviewUser.id,
-        user_name: reviewUser.user_name,
-        full_name: reviewUser.full_name,
-        nickname: reviewUser.nickname,
-        date_created: reviewUser.date_created,
-      }
-    };
-  });
-}
-
-function makeMaliciousThing(user) {
-  const maliciousThing = {
-    id: 911,
-    image: 'http://placehold.it/500x500',
-    date_created: new Date().toISOString(),
-    title: 'Naughty naughty very naughty <script>alert("xss");</script>',
-    user_id: user.id,
-    content: 'Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.',
-  };
-  const expectedThing = {
-    ...makeExpectedThing([user], maliciousThing),
-    title: 'Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
-    content: 'Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.',
-  };
-  return {
-    maliciousThing,
-    expectedThing,
-  };
-}
-
 function makeFixtures() {
   const testUsers = makeUsersArray();
   const testWorkouts = makeWorkoutsArray(testUsers);
@@ -227,53 +144,50 @@ function cleanTables(db) {
   );
 }
 
-function seedUsers(db, users) {
-  const preppedUsers = users.map(user => ({
+function seedUsersTable(db, users) {
+  const preppedUsers = users.map((user) => ({
     ...user,
     password: bcrypt.hashSync(user.password, 1),
   }));
-  return db.into('thingful_users').insert(preppedUsers)
+  return db
+    .into('users')
+    .insert(preppedUsers)
     .then(() =>
-      // update the auto sequence to stay in sync
-      db.raw(
-        'SELECT setval(\'thingful_users_id_seq\', ?)',
-        [users[users.length - 1].id],
-      )
+      db.raw('SELECT setval(\'users_id_seq\', ?)', [
+        users[users.length - 1].id,
+      ])
     );
 }
 
-function seedThingsTables(db, users, things, reviews = []) {
-  return seedUsers(db, users)
-    .then(() =>
-      db
-        .into('thingful_things')
-        .insert(things)
-    )
-    .then(() =>
-      reviews.length && db.into('thingful_reviews').insert(reviews)
-    );
+function seedOtherTables(db, workouts, exercises, sets, users) {
+  return db.transaction(async (trx) => {
+    await seedUsersTable(trx, users);
+    await trx.into('workouts').insert(workouts);
+    await trx.raw('SELECT setval(\'workouts_id_seq\', ?)', [
+      workouts[workouts.length - 1].id,
+    ]);
+    await trx.into('exercises').insert(exercises);
+    await trx.raw('SELECT setval(\'exercises_id_seq\', ?)', [
+      exercises[exercises.length - 1].id,
+    ]);
+    await trx.into('sets').insert(sets);
+    await trx.raw('SELECT setval(\'sets_id_seq\', ?)', [
+      sets[sets.length - 1].id,
+    ]);
+  });
 }
 
-function seedMaliciousThing(db, user, thing) {
-  return seedUsers(db, [user])
-    .then(() =>
-      db
-        .into('thingful_things')
-        .insert([thing])
-    );
+function seedMaliciousSpiirt(db, users, workouts) {
+  return seedUsersTable(db, users).then(() =>
+    db.into('spirits').insert(workouts)
+  );
 }
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
-  const token = jwt.sign(
-    {
-      user_id: user.id
-    },
-    secret,
-    {
-      subject: user.user_name,
-    }
-  );
-
+  const token = jwt.sign({ user_id: user.id }, secret, {
+    subject: user.username,
+    algorithm: 'HS256',
+  });
   return `Bearer ${token}`;
 }
 
@@ -283,14 +197,11 @@ module.exports = {
   makeWorkoutsArray,
   makeExercisesArray,
   makeSetsArray,
-  makeExpectedThing,
-  makeExpectedThingReviews,
-  makeMaliciousThing,
 
   makeFixtures,
   cleanTables,
-  seedUsers,
-  seedThingsTables,
-  seedMaliciousThing,
+  seedUsersTable,
+  seedOtherTables,
+  seedMaliciousSpiirt,
   makeAuthHeader,
 };
