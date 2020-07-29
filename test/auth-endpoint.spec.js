@@ -70,13 +70,15 @@ describe('Auth Endpoints', function () {
         { user_id: testUser.id },
         process.env.JWT_SECRET,
         {
-          subject: testUser.username,
+          subject: testUser.email,
           algorithm: 'HS256',
         }
       );
+      const expectedID = testUser.id;
 
       return supertest(app).post('/api/auth/login').send(userValid).expect(200, {
         authToken: expectedToken,
+        user_id: expectedID
       });
     });
   });

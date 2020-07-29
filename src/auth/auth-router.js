@@ -8,11 +8,11 @@ const authRouter = express.Router();
 authRouter
   .route('/login')
   .post(express.json(), (req, res, next) => {
-    console.log(req.body);
     const { email, password } = req.body;
     const loginUser = { email, password };
 
-    loginUser.email = email.toLowerCase();
+    if (loginUser.email !== void (0))
+      loginUser.email = email.toLowerCase();
 
     for (const [key, value] of Object.entries(loginUser))
       if (!value)
@@ -22,12 +22,12 @@ authRouter
     return AuthService.getUserWithUserName(req.app.get('db'), loginUser.email)
       .then(user => {
         if (!user)
-          return res.status(400).json({ error: 'Incorrect Email or Password 1' });
+          return res.status(400).json({ error: 'Incorrect Email or Password' });
 
         return bcrypt.compare(password, user.password)
           .then(passwordMatch => {
             if (!passwordMatch)
-              return res.status(400).json({ error: 'Incorrect Email or Password 2' });
+              return res.status(400).json({ error: 'Incorrect Email or Password' });
 
             const token = jwt.sign({ user_id: user.id }, process.env.JWT_SECRET, { subject: user.email });
 

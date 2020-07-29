@@ -38,7 +38,7 @@ function makeWorkoutsArray(users) {
   return [
     {
       id: 1,
-      workout_date: '2020-07-27',
+      workout_date: '2020-07-27T00:00:00.000Z',
       title: 'Calisthenics',
       notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ',
       user_id: users[0].id,
@@ -47,7 +47,7 @@ function makeWorkoutsArray(users) {
     },
     {
       id: 2,
-      workout_date: '2020-07-26',
+      workout_date: '2020-07-27T00:00:00.000Z',
       title: 'Strength',
       notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ',
       user_id: users[0].id,
@@ -56,7 +56,7 @@ function makeWorkoutsArray(users) {
     },
     {
       id: 3,
-      workout_date: '2020-07-26',
+      workout_date: '2020-07-27T00:00:00.000Z',
       title: 'Run',
       notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ',
       user_id: users[0].id,
@@ -124,6 +124,7 @@ function makeSetsArray(exercises) {
   ];
 }
 
+
 function makeFixtures() {
   const testUsers = makeUsersArray();
   const testWorkouts = makeWorkoutsArray(testUsers);
@@ -185,7 +186,7 @@ function seedMaliciousSpiirt(db, users, workouts) {
 
 function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   const token = jwt.sign({ user_id: user.id }, secret, {
-    subject: user.username,
+    subject: user.email,
     algorithm: 'HS256',
   });
   return `Bearer ${token}`;
