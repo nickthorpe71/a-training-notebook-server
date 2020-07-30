@@ -1,10 +1,87 @@
 const express = require('express');
+const path = require('path');
 const WorkoutsService = require('./workouts-service');
 const ExercisesService = require('../exercises/exercises-service');
 const SetsService = require('../sets/sets-setvice');
 const { requireAuth } = require('../middleware/jwt-auth');
+const bodyParser = express.json();
 
 const workoutsRouter = express.Router();
+
+workoutsRouter
+  .route('/')
+  .all(requireAuth)
+  .post(bodyParser, (req, res, next) => {
+    const {
+      user_id,
+      title,
+      numExercises,
+      numSetsPer,
+      time,
+      date,
+      notes,
+      exercises
+    } = req.body;
+
+    //need to add time column to table
+    const newWorkout = {
+      date,
+      title,
+      notes,
+    };
+
+    for (const [key, value] of Object.entries(newWorkout))
+      if (!value)
+        return res.status(400).json({
+          error: `Missing '${key}' in request body`
+        });
+
+    newWorkout.user_id = user_id;
+
+    WorkoutsService.addWorkout(req.app.get('db'), newWorkout)
+      .then(workout => {
+        let resWorkout = workout;
+
+
+        const newExercises = exercises.map(exercise => {
+          return {
+            title: exercise.title,
+            workout_id: workout.id
+          };
+        });
+
+        newExercises.forEach(exercise => {
+          for (const [key, value] of Object.entries(newWorkout))
+            if (!value)
+              return res.status(400).json({
+                error: `Missing '${key}' in request body`
+              });
+        });
+
+        return ExercisesService.addExercises(req.app.get('db'), newExercises)
+          .then(resExercises => {
+            resWorkout.exercises = resExercises;
+
+            const newSets = [];
+
+            exercises.forEach(exercise => {
+              exercise.sets.forEach(set => newSets.push(set));
+            });
+
+            return SetsService.addSets(req.app.get('db'), newSets)
+              .then(resSets => {
+                resWorkout.exercises[0].sets = resSets;
+
+                res
+                  .status(201)
+                  .location(path.posix.join(req.originalUrl, `/${workout.id}`))
+                  .json(resWorkout); //need to add serialization
+
+              })
+              .catch(next);
+          });
+      });
+  });
 
 workoutsRouter
   .route('/:user_id/:workout_date')
