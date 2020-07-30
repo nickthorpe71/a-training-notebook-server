@@ -4,6 +4,7 @@ const WorkoutsService = require('./workouts-service');
 const ExercisesService = require('../exercises/exercises-service');
 const SetsService = require('../sets/sets-setvice');
 const { requireAuth } = require('../middleware/jwt-auth');
+const { serialize } = require('v8');
 const bodyParser = express.json();
 
 const workoutsRouter = express.Router();
@@ -15,8 +16,6 @@ workoutsRouter
     const {
       user_id,
       title,
-      numExercises,
-      numSetsPer,
       time,
       date,
       notes,
@@ -25,7 +24,7 @@ workoutsRouter
 
     //need to add time column to table
     const newWorkout = {
-      date,
+      workout_date: date,
       title,
       notes,
     };
@@ -64,8 +63,21 @@ workoutsRouter
 
             const newSets = [];
 
-            exercises.forEach(exercise => {
-              exercise.sets.forEach(set => newSets.push(set));
+            // exercise_id, set_weight, set_reps, set_number
+            exercises.forEach((exercise, exerciseIndex) => {
+              exercise.sets.forEach(set => {
+                console.log(exercises, 'exercises');
+                console.log(resExercises, 'resExercises');
+                console.log(exerciseIndex, 'index');
+                const newSet = {
+                  exercise_id: resExercises[exerciseIndex].id,
+                  set_weight: set.weight,
+                  set_reps: set.reps,
+                  set_number: set.setNum
+                };
+
+                newSets.push(newSet);
+              });
             });
 
             return SetsService.addSets(req.app.get('db'), newSets)

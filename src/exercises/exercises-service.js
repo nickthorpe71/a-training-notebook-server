@@ -13,7 +13,7 @@ const ExercisesService = {
       .insert(newExercises)
       .into('exercises')
       .returning('*')
-      .then(([exercises]) => exercises);
+      .then(exercises => exercises);
   },
 
 };

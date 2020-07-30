@@ -21,7 +21,7 @@ const WorkoutsService = {
   addWorkout(db, newWorkout) {
     return db
       .insert(newWorkout)
-      .into('workout')
+      .into('workouts')
       .returning('*')
       .then(([workout]) => workout);
   },

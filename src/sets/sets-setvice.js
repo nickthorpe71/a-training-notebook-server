@@ -13,7 +13,7 @@ const SetsService = {
       .insert(newSets)
       .into('sets')
       .returning('*')
-      .then(([sets]) => sets);
+      .then(sets => sets);
   },
 };
 
