@@ -4,7 +4,6 @@ const WorkoutsService = require('./workouts-service');
 const ExercisesService = require('../exercises/exercises-service');
 const SetsService = require('../sets/sets-setvice');
 const { requireAuth } = require('../middleware/jwt-auth');
-const { serialize } = require('v8');
 const bodyParser = express.json();
 
 const workoutsRouter = express.Router();
@@ -66,9 +65,6 @@ workoutsRouter
             // exercise_id, set_weight, set_reps, set_number
             exercises.forEach((exercise, exerciseIndex) => {
               exercise.sets.forEach(set => {
-                console.log(exercises, 'exercises');
-                console.log(resExercises, 'resExercises');
-                console.log(exerciseIndex, 'index');
                 const newSet = {
                   exercise_id: resExercises[exerciseIndex].id,
                   set_weight: set.weight,
@@ -96,64 +92,93 @@ workoutsRouter
   });
 
 workoutsRouter
-  .route('/:user_id/:workout_date')
+  .route('/:user_id')
   .all(requireAuth)
   .get((req, res, next) => {
-    const { user_id, workout_date } = req.params;
-    WorkoutsService.getworkoutsByUserAndDate(req.app.get('db'), user_id, workout_date)
-      .then(workouts => {
-        res
-          .status(200)
-          .json(workouts);
-      })
-      .catch(next);
-  });
+    //use req.query to look for a month or a workout_date or a workout_id
+    const { user_id } = req.params;
 
-workoutsRouter
-  .route('/:workout_id')
-  .all(requireAuth)
-  .get((req, res, next) => {
-    const { workout_id } = req.params;
+    //if workout_date
+    if ('workout_date' in req.query) {
+      const workout_date = req.query.workout_date;
+      WorkoutsService.getworkoutsByUserAndDate(req.app.get('db'), user_id, workout_date)
+        .then(workouts => {
+          res
+            .status(200)
+            .json(workouts);
+        })
+        .catch(next);
+    }
 
-    let resWorkout = {};
+    //if month
+    if ('month' in req.query) {
+      const month = req.query.month;
+      WorkoutsService.getWorkoutsByMonth(req.app.get('db'), month, user_id)
+        .then(workouts => {
+          res
+            .status(200)
+            .json(workouts);
+        });
+    }
 
-    WorkoutsService.getWorkoutById(req.app.get('db'), workout_id)
-      .then(workout => {
-        resWorkout = workout[0];
+    //if workout_id
+    if ('workout_id' in req.query) {
+      const workout_id = req.query.workout_id;
 
-        //get exercises with this workout_id
-        return ExercisesService.getExerciseByWorkoutId(req.app.get('db'), workout_id)
-          .then(exercises => {
+      let resWorkout = {};
 
-            //for each exercise get an array of set objects
-            const exerciseIds = exercises.map(exercise => exercise.id);
-            return SetsService.getSetsByExerciseIds(req.app.get('db'), exerciseIds)
-              .then(sets => {
+      WorkoutsService.getWorkoutById(req.app.get('db'), workout_id)
+        .then(workout => {
+          resWorkout = workout[0];
 
-                //add set objects as a sets array to their respecitve exercise
-                const exercisesWithSets = exercises.map(exercise => {
-                  return {
-                    title: exercise.title,
-                    sets: sets
-                      .filter(set => set.exercise_id === exercise.id)
-                      .map(set => {
-                        return {
-                          setNum: set.set_number,
-                          weight: set.set_weight,
-                          reps: set.set_reps
-                        };
-                      })
-                  };
+          //get exercises with this workout_id
+          return ExercisesService.getExerciseByWorkoutId(req.app.get('db'), workout_id)
+            .then(exercises => {
+
+              //for each exercise get an array of set objects
+              const exerciseIds = exercises.map(exercise => exercise.id);
+              return SetsService.getSetsByExerciseIds(req.app.get('db'), exerciseIds)
+                .then(sets => {
+
+                  //add set objects as a sets array to their respecitve exercise
+                  const exercisesWithSets = exercises.map(exercise => {
+                    return {
+                      title: exercise.title,
+                      sets: sets
+                        .filter(set => set.exercise_id === exercise.id)
+                        .map(set => {
+                          return {
+                            setNum: set.set_number,
+                            weight: set.set_weight,
+                            reps: set.set_reps
+                          };
+                        })
+                    };
+                  });
+
+                  //add exercises as array work resWorkout
+                  resWorkout.exercises = exercisesWithSets;
+
+                  res
+                    .status(200)
+                    .json(resWorkout);
                 });
+            });
+        })
+        .catch(next);
+    }
 
-                //add exercises as array work resWorkout
-                resWorkout.exercises = exercisesWithSets;
+  })
+  .delete(bodyParser, (req, res, next) => {
+    const { user_id, workout_id } = req.body;
 
-                res
-                  .status(200)
-                  .json(resWorkout);
-              });
-          });
+    WorkoutsService.deleteWorkout(
+      req.app.get('db'),
+      user_id,
+      workout_id
+    )
+      .then(() => {
+        res.status(204).end();
       })
       .catch(next);
   });

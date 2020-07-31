@@ -18,6 +18,14 @@ const WorkoutsService = {
       .where('id', workout_id);
   },
 
+  getWorkoutsByMonth(db, month, user_id) {
+    return db
+      .select('*')
+      .from('workouts')
+      .andWhereRaw(`EXTRACT(MONTH FROM workout_date::date) = ?`, [month])
+      .where('user_id', user_id);
+  },
+
   addWorkout(db, newWorkout) {
     return db
       .insert(newWorkout)
@@ -26,10 +34,13 @@ const WorkoutsService = {
       .then(([workout]) => workout);
   },
 
-  deleteWorkout(db, workout_id) {
+  deleteWorkout(db, user_id, workout_id) {
     return db
       .from('workouts')
-      .where('id', workout_id)
+      .where({
+        user_id: user_id,
+        id: workout_id
+      })
       .delete();
   },
 
