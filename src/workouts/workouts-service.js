@@ -44,6 +44,12 @@ const WorkoutsService = {
       .delete();
   },
 
+  updateWorkout(db, id, newFields) {
+    return db('workouts')
+      .where({ id })
+      .update(newFields);
+  },
+
   serializeWorkout(workout) {
     return {
       id: workout.id,

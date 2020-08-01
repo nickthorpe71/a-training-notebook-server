@@ -25,7 +25,6 @@ workoutsRouter
     const newWorkout = {
       workout_date: date,
       title,
-      notes,
     };
 
     for (const [key, value] of Object.entries(newWorkout))
@@ -46,14 +45,6 @@ workoutsRouter
             title: exercise.title,
             workout_id: workout.id
           };
-        });
-
-        newExercises.forEach(exercise => {
-          for (const [key, value] of Object.entries(newWorkout))
-            if (!value)
-              return res.status(400).json({
-                error: `Missing '${key}' in request body`
-              });
         });
 
         return ExercisesService.addExercises(req.app.get('db'), newExercises)
@@ -89,6 +80,98 @@ workoutsRouter
               .catch(next);
           });
       });
+  })
+  .patch(bodyParser, (req, res, next) => {
+    const { user_id, title, notes, time, date, exercises } = req.body;
+    const workoutToUpdate = { title, notes, time, date, exercises };
+
+    const numberOfValues = Object.values(workoutToUpdate).filter(Boolean).length;
+    if (numberOfValues === 0) {
+      return res.status(400).json({
+        error: {
+          message: 'Request body must contain title, notes, time, date or exercises'
+        }
+      });
+    }
+
+    const workoutToSend = {
+      workout_date: date,
+      title: title,
+      notes: notes
+    };
+
+    WorkoutsService.updateWorkout(
+      req.app.get('db'),
+      req.query.workout_id,
+      workoutToSend
+    )
+      .then(numRowsAffected => {
+        if (exercises.length > 0) {
+          //for each of these run an insert/update function (available in every version fo SQL)
+          //only need one array for exercises and one for sets
+
+          const newExercises = [];
+          const newSets = [];
+
+          exercises.forEach(exercise => {
+            if (exercise.id === -1) {
+              newExercises.push({
+                id: exercise.id,
+                title: exercise.title,
+                workout_id: req.query.workout_id
+              });
+
+              exercise.sets.forEach(set => {
+                newSets.push({
+                  id: set.id,
+                  exercise_id: exercise.id,
+                  set_weight: set.weight,
+                  set_reps: set.reps,
+                  set_number: set.setNum
+                });
+              });
+            }
+          });
+
+          return ExercisesService.insertOrUpdateExercises(req.app.get('db'), newExercises)
+            .then(() => {
+              SetsService.insertOrUpdateSets(req.app.get('db'), newSets)
+                .then(() => {
+                  res.status(204).end();
+                });
+            });
+
+
+          // return ExercisesService.bulkUpdateExercises(req.app.get('db'), newExercises)
+          //   .then(resExercises => {
+
+          //     const newSets = [];
+
+          //     exercises.forEach((exercise, exerciseIndex) => {
+          //       exercise.sets.forEach(set => {
+          //         const newSet = {
+          //           id: set.exercise_id,
+          //           exercise_id: resExercises[exerciseIndex].id,
+          //           set_weight: set.weight,
+          //           set_reps: set.reps,
+          //           set_number: set.setNum
+          //         };
+
+          //         newSets.push(newSet);
+          //       });
+          //     });
+
+          //     return SetsService.bulkUpdateSets(req.app.get('db'), newSets)
+          //       .then(resSets => {
+          //         res.status(204).end();
+          //       });
+          //   });
+        } else {
+          res.status(204).end();
+        }
+      })
+      .catch(next);
+
   });
 
 workoutsRouter
@@ -143,11 +226,13 @@ workoutsRouter
                   //add set objects as a sets array to their respecitve exercise
                   const exercisesWithSets = exercises.map(exercise => {
                     return {
+                      id: exercise.id,
                       title: exercise.title,
                       sets: sets
                         .filter(set => set.exercise_id === exercise.id)
                         .map(set => {
                           return {
+                            id: set.id,
                             setNum: set.set_number,
                             weight: set.set_weight,
                             reps: set.set_reps
@@ -167,7 +252,6 @@ workoutsRouter
         })
         .catch(next);
     }
-
   })
   .delete(bodyParser, (req, res, next) => {
     const { user_id, workout_id } = req.body;
